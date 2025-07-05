@@ -1,33 +1,42 @@
-import { StartExecutionCommand, SFNClient } from "@aws-sdk/client-step-functions";
-import { fromCognitoIdentityPool } from "@aws-sdk/credential-provider-cognito-identity";
+import React, { useState } from 'react';
+import '../styles/form.css';
 
-const REGION = "us-east-1";
-const IDENTITY_POOL_ID = "us-east-1_h7p1JTEWW";
-const STATE_MACHINE_ARN = "arn:aws:states:us-east-1:800802900236:stateMachine:fullstack-flow";
+export default function RegisterForm() {
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
+  const [response, setResponse] = useState('');
 
-const client = new SFNClient({
-  region: REGION,
-  credentials: fromCognitoIdentityPool({
-    clientConfig: { region: REGION },
-    identityPoolId: IDENTITY_POOL_ID,
-  }),
-});
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    const payload = { name, email };
 
-async function triggerStepFunction(name, email) {
-  try {
-    const input = {
-      user: { name, email }
-    };
+    try {
+      const res = await fetch(`${process.env.REACT_APP_API_URL}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
 
-    const command = new StartExecutionCommand({
-      stateMachineArn: STATE_MACHINE_ARN,
-      input: JSON.stringify(input),
-    });
+      const result = await res.json();
+      setResponse(JSON.stringify(result, null, 2));
+    } catch (err) {
+      setResponse(`Error: ${err.message}`);
+    }
+  };
 
-    const result = await client.send(command);
-    console.log("Execution ARN:", result.executionArn);
-    return result;
-  } catch (err) {
-    console.error("Failed to start Step Function:", err);
-  }
+  return (
+    <div className="card">
+      <h2>Register</h2>
+      <form onSubmit={handleSubmit}>
+        <label>Name:</label>
+        <input type="text" value={name} onChange={(e) => setName(e.target.value)} required />
+
+        <label>Email:</label>
+        <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
+
+        <button type="submit">Submit</button>
+      </form>
+      <pre>{response}</pre>
+    </div>
+  );
 }
