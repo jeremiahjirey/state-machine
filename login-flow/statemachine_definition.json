@@ -1,0 +1,61 @@
+{
+  "Comment": "User Registration Flow - Full State Machine",
+  "StartAt": "ValidateInput",
+  "States": {
+    "ValidateInput": {
+      "Type": "Task",
+      "Resource": "arn:aws:lambda:us-east-1:800802900236:function:validate_input:$LATEST",
+      "Next": "IsValid?"
+    },
+    "IsValid?": {
+      "Type": "Choice",
+      "Choices": [
+        {
+          "Variable": "$.validated",
+          "BooleanEquals": true,
+          "Next": "CheckDuplicate"
+        }
+      ],
+      "Default": "FailValidation"
+    },
+    "CheckDuplicate": {
+      "Type": "Task",
+      "Resource": "arn:aws:lambda:us-east-1:800802900236:function:check_duplicate:$LATEST",
+      "Next": "IsDuplicate?"
+    },
+    "IsDuplicate?": {
+      "Type": "Choice",
+      "Choices": [
+        {
+          "Variable": "$.isDuplicate",
+          "BooleanEquals": true,
+          "Next": "FailDuplicateUser"
+        }
+      ],
+      "Default": "SaveUser"
+    },
+    "SaveUser": {
+      "Type": "Task",
+      "Resource": "arn:aws:lambda:us-east-1:800802900236:function:save_user:$LATEST",
+      "Next": "SendWelcomeEmail"
+    },
+    "SendWelcomeEmail": {
+      "Type": "Task",
+      "Resource": "arn:aws:lambda:us-east-1:800802900236:function:send_email:$LATEST",
+      "Next": "Success"
+    },
+    "FailValidation": {
+      "Type": "Fail",
+      "Error": "ValidationFailed",
+      "Cause": "Missing or invalid input"
+    },
+    "FailDuplicateUser": {
+      "Type": "Fail",
+      "Error": "DuplicateEmail",
+      "Cause": "Email is already registered"
+    },
+    "Success": {
+      "Type": "Succeed"
+    }
+  }
+}
