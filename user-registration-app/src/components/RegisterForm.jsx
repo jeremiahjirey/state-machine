@@ -4,10 +4,14 @@ import '../styles/form.css';
 export default function RegisterForm() {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
-  const [response, setResponse] = useState('');
+  const [successMessage, setSuccessMessage] = useState('');
+  const [errorMessage, setErrorMessage] = useState('');
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setSuccessMessage('');
+    setErrorMessage('');
+
     const payload = { name, email };
 
     try {
@@ -17,10 +21,18 @@ export default function RegisterForm() {
         body: JSON.stringify(payload)
       });
 
+      if (!res.ok) {
+        throw new Error('Failed to start Step Function');
+      }
+
       const result = await res.json();
-      setResponse(JSON.stringify(result, null, 2));
+
+      // Clear input
+      setName('');
+      setEmail('');
+      setSuccessMessage('✅ Registration successful!');
     } catch (err) {
-      setResponse(`Error: ${err.message}`);
+      setErrorMessage(`❌ ${err.message}`);
     }
   };
 
@@ -29,14 +41,26 @@ export default function RegisterForm() {
       <h2>Register</h2>
       <form onSubmit={handleSubmit}>
         <label>Name:</label>
-        <input type="text" value={name} onChange={(e) => setName(e.target.value)} required />
+        <input
+          type="text"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          required
+        />
 
         <label>Email:</label>
-        <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
+        <input
+          type="email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          required
+        />
 
         <button type="submit">Submit</button>
       </form>
-      <pre>{response}</pre>
+
+      {successMessage && <p className="success">{successMessage}</p>}
+      {errorMessage && <p className="error">{errorMessage}</p>}
     </div>
   );
 }
