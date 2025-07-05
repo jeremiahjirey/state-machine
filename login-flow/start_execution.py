@@ -17,7 +17,7 @@ def lambda_handler(event, context):
         return {
             'statusCode': 200,
             'headers': {
-                'Access-Control-Allow-Origin': '*',  # atau ganti jadi frontend URL kalau lebih spesifik
+                'Access-Control-Allow-Origin': '*',  
                 'Access-Control-Allow-Headers': 'Content-Type',
                 'Access-Control-Allow-Methods': 'OPTIONS,POST'
             },
