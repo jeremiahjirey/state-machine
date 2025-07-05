@@ -11,7 +11,7 @@ export default function RegisterForm() {
     const payload = { name, email };
 
     try {
-      const res = await fetch('https://si66j8nerj.execute-api.us-east-1.amazonaws.com/prod', {
+      const res = await fetch(`${process.env.REACT_APP_API_URL}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
